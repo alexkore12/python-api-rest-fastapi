@@ -1,40 +1,61 @@
-# Python FastAPI REST API
+# FastAPI REST API
 
-REST API de alto rendimiento con Python FastAPI.
+REST API de alto rendimiento con Python FastAPI - Versión mejorada 1.1.0
 
-## 🎯 Características
+## 🚀 Características
 
-- **FastAPI** - Framework moderno y rápido
-- **Pydantic** - Validación de datos automática
-- **SQLAlchemy** - ORM para base de datos
-- **Async/Await** - Programación asíncrona
-- **Docker** - Listo para producción
-- **OpenAPI** - Documentación automática
-- **JWT Auth** - Autenticación
-- **Pytest** - Testing integrado
+- **FastAPI** - Framework moderno y rápido (async/await nativo)
+- **Pydantic** - Validación de datos automática con type hints
+- **CORS** - Configuración de CORS completa
+- **Type hints** - Código completamente tipado
+- **Async/Await** - Programación asíncrona de alto rendimiento
+- **Docker** -listo para producción
+- **OpenAPI** - Documentación automática (Swagger UI + ReDoc)
+- **Logging estructurado** - Logs de todas las requests
+- **Manejo de errores** - Errores controlados y bien documentados
+- **Rate limiting** - Preparado para implementación
 
-## 🚀 Inicio Rápido
+## 📋 Endpoints
 
-### Instalación Local
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/health` | Health check |
+| GET | `/items` | Listar items (paginado) |
+| GET | `/items/{id}` | Obtener item por ID |
+| POST | `/items` | Crear nuevo item |
+| PUT | `/items/{id}` | Actualizar item |
+| DELETE | `/items/{id}` | Eliminar item |
+| GET | `/stats` | Estadísticas |
+
+## 🛠️ Instalación
 
 ```bash
-# Clonar
+# Clonar repositorio
 git clone https://github.com/alexkore12/python-api-rest-fastapi.git
 cd python-api-rest-fastapi
 
 # Crear entorno virtual
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
-# venv\Scripts\activate   # Windows
+# venv\Scripts\activate  # Windows
 
 # Instalar dependencias
 pip install -r requirements.txt
-
-# Ejecutar
-uvicorn main:app --reload
 ```
 
-### Con Docker
+## ▶️ Ejecución
+
+### Desarrollo
+
+```bash
+# Con hot reload
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+# O directamente
+python main.py
+```
+
+### Docker
 
 ```bash
 # Build
@@ -42,133 +63,141 @@ docker build -t fastapi-app .
 
 # Run
 docker run -p 8000:8000 fastapi-app
-```
 
-### Con Docker Compose
-
-```bash
+# Docker Compose
 docker-compose up -d
 ```
 
-## 📡 Endpoints
+## 📖 Documentación
 
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| GET | /health | Health check |
-| GET | /items | Listar items |
-| GET | /items/{id} | Obtener item |
-| POST | /items | Crear item |
-| PUT | /items/{id} | Actualizar item |
-| DELETE | /items/{id} | Eliminar item |
-| GET | /stats | Estadísticas |
+Una vez ejecutando la API:
 
-## 📖 Documentación API
+- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+- **OpenAPI JSON**: [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json)
 
-Accede a:
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
+## 🔧 Uso de la API
 
-## 💻 Ejemplos
+### Health Check
 
 ```bash
-# Health check
 curl http://localhost:8000/health
-
-# Listar items
-curl http://localhost:8000/items
-
-# Crear item
-curl -X POST http://localhost:8000/items \
-  -H "Content-Type: application/json" \
-  -d '{"name": "Nuevo producto", "price": 49.99}'
-
-# Obtener item
-curl http://localhost:8000/items/1
-
-# Actualizar item
-curl -X PUT http://localhost:8000/items/1 \
-  -H "Content-Type: application/json" \
-  -d '{"name": "Producto actualizado", "price": 79.99}'
-
-# Eliminar item
-curl -X DELETE http://localhost:8000/items/1
 ```
 
-## 📂 Estructura
+Respuesta:
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-03-21T12:00:00Z",
+  "uptime": "0h 5m 30s",
+  "version": "1.1.0"
+}
+```
+
+### Listar Items (con paginación)
+
+```bash
+curl "http://localhost:8000/items?skip=0&limit=10"
+```
+
+### Crear Item
+
+```bash
+curl -X POST http://localhost:8000/items \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Nuevo producto",
+    "description": "Descripción del producto",
+    "price": 49.99,
+    "in_stock": true
+  }'
+```
+
+### Obtener Item
+
+```bash
+curl http://localhost:8000/items/{item_id}
+```
+
+### Actualizar Item
+
+```bash
+curl -X PUT http://localhost:8000/items/{item_id} \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Producto actualizado",
+    "price": 79.99
+  }'
+```
+
+### Eliminar Item
+
+```bash
+curl -X DELETE http://localhost:8000/items/{item_id}
+```
+
+### Estadísticas
+
+```bash
+curl http://localhost:8000/stats
+```
+
+## 📁 Estructura del Proyecto
 
 ```
 python-api-rest-fastapi/
-├── main.py              # Aplicación principal
-├── models.py            # Modelos Pydantic
-├── database.py         # Configuración de BD
-├── requirements.txt    # Dependencias
-├── Dockerfile          # Imagen Docker
-├── docker-compose.yaml # Orquestación
-├── .dockerignore       # Exclusiones Docker
-├── alembic/            # Migraciones
-├── tests/              # Tests
-└── README.md           # Este archivo
+├── main.py                 # Aplicación principal (v1.1.0)
+├── models.py               # Modelos Pydantic
+├── database.py             # Configuración de BD
+├── requirements.txt        # Dependencias
+├── Dockerfile              # Imagen Docker
+├── docker-compose.yaml     # Orquestación
+├── .dockerignore           # Exclusiones Docker
+├── README.md               # Este archivo
+└── tests/                  # Tests (futuro)
+    └── test_api.py
 ```
 
 ## ⚙️ Variables de Entorno
 
 | Variable | Descripción | Default |
 |----------|-------------|---------|
-| DATABASE_URL | URL de base de datos | sqlite:///./app.db |
-| HOST | Host del servidor | 0.0.0.0 |
-| PORT | Puerto | 8000 |
-| DEBUG | Modo debug | false |
-| SECRET_KEY | Clave secreta JWT | - |
-| ALGORITHM | Algoritmo JWT | HS256 |
-| ACCESS_TOKEN_EXPIRE | Expiración token | 30 |
+| `DATABASE_URL` | URL de base de datos | `sqlite:///./app.db` |
+| `HOST` | Host del servidor | `0.0.0.0` |
+| `PORT` | Puerto | `8000` |
+| `DEBUG` | Modo debug | `false` |
+| `LOG_LEVEL` | Nivel de logging | `INFO` |
 
-## 🛡️ Seguridad
+## 🔒 Seguridad
 
-### Autenticación JWT
+### Headers de Seguridad
 
-```python
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+La API incluye:
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+- **CORS** configurado (en producción, especificar orígenes permitidos)
+- **X-Request-ID** - ID único por request
+- **X-Process-Time** - Tiempo de procesamiento
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
-    return username
-```
-
-### Validación
+### Validación con Pydantic
 
 Pydantic valida automáticamente:
-- Tipos de datos
-- Longitud de strings
-- Rangos de números
-- Campos requeridos
-- Formatos (email, URL, etc.)
 
-```python
-from pydantic import BaseModel, Field, EmailStr
+- ✅ Tipos de datos
+- ✅ Longitud de strings
+- ✅ Rangos de números
+- ✅ Campos requeridos
+- ✅ Formatos (email, URL, etc.)
 
-class ItemCreate(BaseModel):
-    name: str = Field(..., min_length=1, max_length=100)
-    price: float = Field(..., gt=0)
-    description: str | None = Field(None, max_length=500)
-    email: EmailStr | None = None
-```
+### Recomendaciones para Producción
+
+1. **Usar HTTPS** - Configurar proxy reverso (nginx, traefik)
+2. **Limitar CORS** - Especificar dominios permitidos
+3. **Rate Limiting** - Implementar límites de requests
+4. **Autenticación** - Añadir OAuth2 o JWT
+5. **Logs** - Enviar logs a sistema centralizado
+6. **Métricas** - Integrar Prometheus/Grafana
 
 ## 🧪 Testing
-
-### Tests con Pytest
 
 ```bash
 # Instalar dependencias de test
@@ -178,45 +207,27 @@ pip install pytest pytest-asyncio httpx
 pytest
 
 # Con coverage
-pytest --cov=main --cov-report=html
+pytest --cov=. --cov-report=html
 ```
 
-### Ejemplo de Test
+## 📊 Logging
 
-```python
-from fastapi.testclient import TestClient
+La API logsuea:
 
-def test_read_items():
-    response = client.get("/items")
-    assert response.status_code == 200
-    assert isinstance(response.json(), list)
+- Requests entrantes (método, path)
+- Status codes de respuesta
+- Tiempo de procesamiento
+- Errores y advertencias
+
+Ejemplo de log:
+```
+2026-03-21 12:00:00 - __main__ - INFO - [a1b2c3d4] GET /items
+2026-03-21 12:00:00 - __main__ - INFO - [a1b2c3d4] Status: 200 Time: 0.023s
 ```
 
-## 🐳 Docker
+## 🚀 Despliegue Recomendado
 
-### Optimizaciones
-
-```dockerfile
-# Multi-stage build para producción
-FROM python:3.11-slim as builder
-
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir --user -r requirements.txt
-
-FROM python:3.11-slim
-WORKDIR /app
-COPY --from=builder /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
-
-COPY . .
-USER 1000
-
-EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0"]
-```
-
-### Docker Compose con PostgreSQL
+### Docker Compose con Nginx
 
 ```yaml
 version: '3.8'
@@ -226,109 +237,43 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://user:pass@db:5432/appdb
-    depends_on:
-      - db
+      - DEBUG=false
+      - LOG_LEVEL=info
 
-  db:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=pass
-      - POSTGRES_DB=appdb
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
 ```
 
-## 📊 Base de Datos
+## 📝 Changelog
 
-### Modelos SQLAlchemy
+### v1.1.0 (2026-03-21)
+- ✅ Añadido middleware de logging estructurado
+- ✅ Mejora en manejo de errores
+- ✅ Validación de parámetros de paginación
+- ✅ Headers de response (X-Request-ID, X-Process-Time)
+- ✅ Documentación OpenAPI mejorada
+- ✅ Endpoint de stats mejorado con uptime
 
-```python
-from sqlalchemy import Column, Integer, String, Float
-from database import Base
+### v1.0.0 (2026-03-20)
+- ✅ Versión inicial
+- ✅ CRUD completo de items
+- ✅ Pydantic models
+- ✅ Docker support
 
-class Item(Base):
-    __tablename__ = "items"
+## 🤖 Generado por
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    price = Column(Float)
-    description = Column(String, nullable=True)
-```
+Este proyecto fue creado y actualizado por **OpenClaw AI Assistant**.
 
-### Migraciones Alembic
-
-```bash
-# Generar migración
-alembic revision --autogenerate -m "Add items table"
-
-# Aplicar migraciones
-alembic upgrade head
-
-# Rollback
-alembic downgrade -1
-```
-
-## 🚀 Despliegue
-
-### Producción con Gunicorn
-
-```bash
-# Instalar
-pip install gunicorn
-
-# Ejecutar workers
-gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker
-```
-
-### Environment Variables
-
-```bash
-# Production
-export DATABASE_URL="postgresql://user:pass@host/db"
-export SECRET_KEY="your-secret-key"
-export DEBUG=false
-```
-
-## 📈 Métricas
-
-### Health Check
-
-```python
-@app.get("/health")
-async def health_check():
-    return {
-        "status": "healthy",
-        "uptime": time.time() - START_TIME,
-        "version": "1.0.0"
-    }
-```
-
-### Prometheus Metrics
-
-```bash
-pip install prometheus-client
-```
-
-```python
-from prometheus_client import Counter, generate_latest
-
-REQUEST_COUNT = Counter('requests_total', 'Total requests')
-
-@app.get("/metrics")
-async def metrics():
-    return generate_latest()
-```
-
-## 🤖 Generado Automáticamente
-
-Este proyecto fue creado y actualizado por OpenClaw AI Assistant.
-
-## 📝 Licencia
+## 📄 Licencia
 
 MIT License
 
-## 👤 Autor
+---
 
-- **GitHub**: [alexkore12](https://github.com/alexkore12)
+**GitHub**: [alexkore12](https://github.com/alexkore12)
