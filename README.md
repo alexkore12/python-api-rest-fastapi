@@ -4,14 +4,14 @@ API REST de alto rendimiento construida con FastAPI para gestión de items.
 
 ## 📋 Descripción
 
-API RESTful moderna con FastAPI que proporciona operaciones CRUD completas sobre items, con validación de datos, paginación, logging estructurado y documentación automática.
+API RESTful moderna con FastAPI que proporciona operaciones CRUD completas sobre items, con validación de datos, paginación, logging estructurado, rate limiting y documentación automática.
 
 ## 🛠️ Características
 
 - ⚡ **Alto Rendimiento** - Hasta 30k+ requests/seg
 - 🔒 **Seguridad** - Validación con Pydantic
 - 🌐 **CORS** - Configuración de Cross-Origin
-- 📊 **Rate Limiting** - Protección contra abusos
+- 🚦 **Rate Limiting** - Protección contra abusos (100 req/min)
 - 📝 **Logging Estructurado** - Monitoreo detallado
 - ❤️ **Health Checks** - Endpoints de salud
 - 📚 **Documentación Auto** - OpenAPI/Swagger/ReDoc
@@ -38,7 +38,10 @@ source venv/bin/activate  # Linux/Mac
 # 3. Instalar dependencias
 pip install -r requirements.txt
 
-# 4. Ejecutar
+# 4. Configurar (opcional)
+cp .env.example .env
+
+# 5. Ejecutar
 python main.py
 ```
 
@@ -141,7 +144,7 @@ curl -X DELETE "http://localhost:8000/items/{item_id}"
   "status": "healthy",
   "timestamp": "2026-03-21T12:00:00",
   "uptime": "2h 30m 15s",
-  "version": "1.1.0"
+  "version": "1.2.0"
 }
 ```
 
@@ -178,10 +181,23 @@ python-api-rest-fastapi/
 ├── Dockerfile          # Imagen Docker
 ├── docker-compose.yaml  # Orquestación
 ├── .dockerignore       # Ignorar archivos en Docker
+├── .env.example        # Ejemplo de configuración
+├── .gitignore          # Archivos ignorados
 └── README.md           # Este archivo
 ```
 
-## 🔧 Configuración
+## ⚙️ Configuración
+
+### Variables de Entorno
+
+| Variable | Descripción | Default |
+|----------|-------------|---------|
+| `HOST` | Host del servidor | 0.0.0.0 |
+| `PORT` | Puerto del servidor | 8000 |
+| `LOG_LEVEL` | Nivel de logging | INFO |
+| `CORS_ORIGINS` | Orígenes permitidos (comma-separated) | * |
+| `RATE_LIMIT_REQUESTS` | Requests máximos por ventana | 100 |
+| `RATE_LIMIT_WINDOW` | Ventana de tiempo en segundos | 60 |
 
 ### Parámetros de Paginación
 
@@ -261,12 +277,13 @@ python main.py
 
 ## 📈 Mejoras Incluidas
 
+- ✅ Rate limiting real (100 req/min por IP)
+- ✅ Configuración via variables de entorno
 - ✅ Logging estructurado con request IDs
 - ✅ Middleware para tiempo de procesamiento
 - ✅ Validación de paginación
 - ✅ Endpoints de health y stats
-- ✅ Documentación en español
-- ✅ Manejo de errores mejorado
+- ✅ CORS configurable
 
 ## 🐛 Troubleshooting
 
@@ -280,7 +297,8 @@ lsof -i :8000
 kill -9 <PID>
 
 # O usar otro puerto
-python main.py --port 8001
+python main.py
+# O modifica .env
 ```
 
 ### Dependencias
@@ -293,15 +311,26 @@ pip install --upgrade pip
 pip install -r requirements.txt --force-reinstall
 ```
 
+## 🤝 Contribuir
+
+1. Fork el repositorio
+2. Crea una rama (`git checkout -b feature/nueva-caracteristica`)
+3. Commit tus cambios (`git commit -m 'Agrega nueva característica'`)
+4. Push a la rama (`git push origin feature/nueva-caracteristica`)
+5. Abre un Pull Request
+
 ## 📝 Changelog
 
-- **v1.0.0** - API básica con CRUD
+- **v1.2.0** - Rate limiting y configuración via env
 - **v1.1.0** - Mejoras de seguridad y logging
-
-## 🤝 Contribución
-
-¡Contribuciones bienvenidas! Abre un issue o PR.
+- **v1.0.0** - API básica con CRUD
 
 ## 📄 Licencia
 
 MIT License - Uso libre.
+
+---
+
+## 🇬🇧 English
+
+This is a high-performance REST API built with FastAPI for item management. Features include CRUD operations, pagination, rate limiting, structured logging, and automatic documentation.
