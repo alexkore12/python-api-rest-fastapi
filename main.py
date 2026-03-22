@@ -1,11 +1,14 @@
 """
 FastAPI REST API - Aplicación principal
-Versión 2.0 con Autenticación JWT, seguridad mejorada y mejor manejo de errores
+Versión 2.1 con Rate Limiting, Autenticación JWT y seguridad mejorada
 """
 from fastapi import FastAPI, HTTPException, status, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
@@ -24,6 +27,9 @@ from auth import (
     User,
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
+
+# Rate Limiter setup
+limiter = Limiter(key_func=get_remote_address)
 
 # Configurar logging
 logging.basicConfig(
@@ -55,16 +61,31 @@ app = FastAPI(
 - ✅ Validación con Pydantic
 - ✅ Autenticación JWT
 - ✅ CORS configurado
-- ✅ Rate Limiting
+- ✅ Rate Limiting (100 req/min)
 - ✅ Logging estructurado
 - ✅ Health checks
 - ✅ Documentación OpenAPI""",
-    version="2.0.0",
+    version="2.1.0",
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json"
 )
+
+# Add rate limiter to app state
+app.state.limiter = limiter
+
+# Rate limit handler
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={
+            "error": "Too Many Requests",
+            "detail": "Rate limit exceeded. Please try again later.",
+            "retry_after": exc.detail
+        }
+    )
 
 # OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -131,7 +152,8 @@ def calculate_uptime() -> str:
     description="Autenticarse y obtener token JWT",
     tags=["Auth"]
 )
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+@limiter.limit("10/minute")
+async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     """Login para obtener token JWT"""
     user = authenticate_user(form_data.username, form_data.password)
     
@@ -170,14 +192,15 @@ async def read_users_me(current_user: User = Depends(get_current_active_user)):
     }
 
 
-# Health check (público)
+# Health check (público) - 30 requests per minute
 @app.get(
     "/health",
     summary="Health Check",
     description="Verificar estado de la API",
     tags=["Health"]
 )
-async def health_check():
+@limiter.limit("30/minute")
+async def health_check(request: Request):
     """Endpoint de health check"""
     return {
         "status": "healthy",
@@ -187,7 +210,7 @@ async def health_check():
     }
 
 
-# GET all items (protegido)
+# GET all items (protegido) - 60 requests per minute
 @app.get(
     "/items",
     status_code=status.HTTP_200_OK,
@@ -196,7 +219,9 @@ async def health_check():
     tags=["Items"],
     response_model=Dict[str, Any]
 )
+@limiter.limit("60/minute")
 async def get_items(
+    request: Request,
     skip: int = 0, 
     limit: int = 100,
     current_user: User = Depends(get_current_active_user)

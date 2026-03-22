@@ -1,25 +1,11 @@
-{
-  "name": "python-api-rest-fastapi",
-  "version": "2.0.0",
-  "description": "REST API con Python FastAPI y Autenticación JWT",
-  "main": "main.py",
-  "scripts": {
-    "start": "uvicorn main:app --host 0.0.0.0 --port 8000",
-    "dev": "uvicorn main:app --reload",
-    "test": "pytest -v"
-  },
-  "dependencies": {
-    "fastapi": "^0.104.1",
-    "uvicorn": "^0.24.0",
-    "pydantic": "^2.5.0",
-    "python-dotenv": "^1.0.0",
-    "python-jose[cryptography]": "^3.3.0",
-    "passlib[bcrypt]": "^1.7.4",
-    "pyyaml": "^6.0.1"
-  },
-  "devDependencies": {
-    "pytest": "^7.4.0",
-    "httpx": "^0.25.0",
-    "pytest-cov": "^4.1.0"
-  }
-}
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.0
+python-dotenv==1.0.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+pyyaml==6.0.1
+slowapi==0.1.9
+pytest==7.4.0
+httpx==0.25.0
+pytest-cov==4.1.0

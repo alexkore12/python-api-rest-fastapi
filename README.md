@@ -1,6 +1,6 @@
 # FastAPI REST API
 
-REST API de alto rendimiento con Python FastAPI - **Versión 2.0 con Autenticación JWT**
+REST API de alto rendimiento con Python FastAPI - **Versión 2.1 con Rate Limiting**
 
 ## 🚀 Características
 
@@ -8,6 +8,7 @@ REST API de alto rendimiento con Python FastAPI - **Versión 2.0 con Autenticaci
 - **Pydantic** - Validación de datos automática con type hints
 - **JWT Authentication** - Seguridad con tokens JWT
 - **OAuth2** - Flujo de autenticación estándar
+- **Rate Limiting** - Límite de requests (100/min público, 60/min autenticado)
 - **CORS** - Configuración de CORS completa
 - **Type hints** - Código completamente tipado
 - **Async/Await** - Programación asíncrona de alto rendimiento
@@ -237,6 +238,7 @@ La API incluye:
 - **JWT Tokens** - Autenticación stateless
 - **OAuth2 Password Flow** - Flujo estándar de autenticación
 - **CORS configurado** - En producción, especificar orígenes permitidos
+- **Rate Limiting** - Límite de requests para prevenir abuse
 - **X-Request-ID** - ID único por request
 - **X-Process-Time** - Tiempo de procesamiento
 - **Pydantic Validation** - Validación automática de entrada
@@ -269,6 +271,11 @@ python-api-rest-fastapi/
 ```
 
 ## 📝 Changelog
+
+### v2.1.0 (2026-03-22)
+- ✅ Rate Limiting con slowapi (100 req/min público, 60 req/min autenticado)
+- ✅ Manejo de errores de rate limit (HTTP 429)
+- ✅ Documentación de rate limiting
 
 ### v2.0.0 (2026-03-22)
 - ✅ Autenticación JWT completa
