@@ -197,6 +197,12 @@ python-api-rest-fastapi/
 | `X-Request-ID` | ID único de request |
 | `X-Process-Time` | Tiempo de procesamiento (segundos) |
 
+## 🔒 Seguridad
+
+- **Grype**: Escaneo de vulnerabilidades (alternativa a Trivy)
+- **Safety**: Verificación de dependencias Python
+- ⚠️ Trivy comprometido (supply chain attack, marzo 2026)
+
 ## 🧪 Pruebas
 
 ### Health Check
