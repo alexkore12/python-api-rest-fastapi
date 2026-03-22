@@ -20,6 +20,7 @@ import os
 
 from models import Item, ItemCreate, ItemUpdate
 from database import items_db
+from security_headers import SecurityHeadersMiddleware
 from auth import (
     create_access_token, 
     authenticate_user, 
@@ -47,7 +48,7 @@ start_time = datetime.utcnow()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifecycle manager"""
-    logger.info("🚀 Starting FastAPI REST API v2.0...")
+    logger.info("🚀 Starting FastAPI REST API v2.1...")
     logger.info(f"📚 API Documentation: /docs")
     logger.info(f"🔐 Authentication: JWT enabled")
     yield
@@ -98,6 +99,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Security headers middleware
+app.add_middleware(SecurityHeadersMiddleware)
 
 # Middleware para logging de requests
 @app.middleware("http")
