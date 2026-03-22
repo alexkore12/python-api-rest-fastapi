@@ -2,68 +2,32 @@
 FastAPI REST API - Aplicación principal
 Versión mejorada con seguridad, logging y mejor manejo de errores
 """
-import os
+from fastapi import FastAPI, HTTPException, status, Request, Depends
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Optional, Dict, Any
 import uuid
 import logging
 import time
 import sys
 
-from fastapi import FastAPI, HTTPException, Request, status
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
-
-# Cargar variables de entorno
-from dotenv import load_dotenv
-load_dotenv()
-
 from models import Item, ItemCreate, ItemUpdate
 from database import items_db
 
 # Configurar logging
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 logging.basicConfig(
-    level=getattr(logging, LOG_LEVEL),
+    level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler(sys.stdout)]
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
 )
 logger = logging.getLogger(__name__)
 
-# Configuración
-HOST = os.getenv("HOST", "0.0.0.0")
-PORT = int(os.getenv("PORT", "8000"))
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*").split(",")
-
-# Rate limiting simple
-rate_limit_store: Dict[str, list] = {}
-RATE_LIMIT = int(os.getenv("RATE_LIMIT_REQUESTS", "100"))
-RATE_WINDOW = int(os.getenv("RATE_LIMIT_WINDOW", "60"))
-
 # Almacenar inicio
 start_time = datetime.utcnow()
-
-
-def check_rate_limit(client_id: str) -> bool:
-    """Verifica si el cliente excedió el rate limit"""
-    now = time.time()
-    if client_id not in rate_limit_store:
-        rate_limit_store[client_id] = []
-    
-    # Limpiar requests antiguos
-    rate_limit_store[client_id] = [
-        req_time for req_time in rate_limit_store[client_id]
-        if now - req_time < RATE_WINDOW
-    ]
-    
-    if len(rate_limit_store[client_id]) >= RATE_LIMIT:
-        return False
-    
-    rate_limit_store[client_id].append(now)
-    return True
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -72,7 +36,6 @@ async def lifespan(app: FastAPI):
     logger.info(f"📚 API Documentation: /docs")
     yield
     logger.info("🛑 Shutting down API...")
-
 
 app = FastAPI(
     title="FastAPI REST API",
@@ -85,7 +48,7 @@ app = FastAPI(
 - ✅ Logging estructurado
 - ✅ Health checks
 - ✅ Documentación OpenAPI""",
-    version="1.2.0",
+    version="1.1.0",
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
@@ -95,31 +58,18 @@ app = FastAPI(
 # CORS configurado
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
+    allow_origins=["*"],  # En producción, especificar dominios
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Middleware para logging de requests y rate limiting
+# Middleware para logging de requests
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    """Log de todas las requests con rate limiting"""
-    client_id = request.client.host if request.client else "unknown"
+    """Log de todas las requests"""
     request_id = str(uuid.uuid4())[:8]
     start_time = time.time()
-    
-    # Check rate limit
-    if not check_rate_limit(client_id):
-        logger.warning(f"[{request_id}] Rate limit exceeded for {client_id}")
-        return JSONResponse(
-            status_code=429,
-            content={
-                "success": False,
-                "error": "Rate limit exceeded",
-                "retry_after": RATE_WINDOW
-            }
-        )
     
     logger.info(f"[{request_id}] {request.method} {request.url.path}")
     
@@ -145,6 +95,9 @@ async def log_requests(request: Request, call_next):
         )
         raise
 
+# In-memory database
+db = items_db
+
 
 def calculate_uptime() -> str:
     """Calcular uptime desde el inicio"""
@@ -167,7 +120,7 @@ async def health_check():
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
         "uptime": calculate_uptime(),
-        "version": "1.2.0"
+        "version": "1.1.0"
     }
 
 
@@ -182,6 +135,7 @@ async def health_check():
 )
 async def get_items(skip: int = 0, limit: int = 100):
     """Obtener lista de items"""
+    # Validar parámetros de paginación
     if skip < 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -193,7 +147,7 @@ async def get_items(skip: int = 0, limit: int = 100):
             detail="limit debe estar entre 1 y 100"
         )
     
-    items = list(items_db.values())
+    items = list(db.values())
     total = len(items)
     
     logger.info(f"Fetching items: skip={skip}, limit={limit}, total={total}")
@@ -217,13 +171,13 @@ async def get_items(skip: int = 0, limit: int = 100):
 )
 async def get_item(item_id: str):
     """Obtener item por ID"""
-    if item_id not in items_db:
+    if item_id not in db:
         logger.warning(f"Item not found: {item_id}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Item {item_id} no encontrado"
         )
-    return {"success": True, "data": items_db[item_id]}
+    return {"success": True, "data": db[item_id]}
 
 
 # POST create item
@@ -243,7 +197,7 @@ async def create_item(item: ItemCreate):
         **item.model_dump(),
         created_at=datetime.utcnow().isoformat()
     )
-    items_db[item_id] = new_item
+    db[item_id] = new_item
     
     logger.info(f"Created item: {item_id}")
     
@@ -260,21 +214,21 @@ async def create_item(item: ItemCreate):
 )
 async def update_item(item_id: str, item_update: ItemUpdate):
     """Actualizar item existente"""
-    if item_id not in items_db:
+    if item_id not in db:
         logger.warning(f"Item not found for update: {item_id}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Item {item_id} no encontrado"
         )
     
-    existing = items_db[item_id]
+    existing = db[item_id]
     update_data = item_update.model_dump(exclude_unset=True)
     
     for field, value in update_data.items():
         setattr(existing, field, value)
     
     existing.updated_at = datetime.utcnow().isoformat()
-    items_db[item_id] = existing
+    db[item_id] = existing
     
     logger.info(f"Updated item: {item_id}")
     
@@ -291,14 +245,14 @@ async def update_item(item_id: str, item_update: ItemUpdate):
 )
 async def delete_item(item_id: str):
     """Eliminar item"""
-    if item_id not in items_db:
+    if item_id not in db:
         logger.warning(f"Item not found for delete: {item_id}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Item {item_id} no encontrado"
         )
     
-    del items_db[item_id]
+    del db[item_id]
     
     logger.info(f"Deleted item: {item_id}")
     
@@ -316,7 +270,7 @@ async def delete_item(item_id: str):
 async def get_stats():
     """Estadísticas de la API"""
     return {
-        "total_items": len(items_db),
+        "total_items": len(db),
         "uptime": calculate_uptime(),
         "timestamp": datetime.utcnow().isoformat()
     }
@@ -326,7 +280,7 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
         app,
-        host=HOST,
-        port=PORT,
-        log_level=LOG_LEVEL.lower()
+        host="0.0.0.0",
+        port=8000,
+        log_level="info"
     )
