@@ -81,8 +81,33 @@ docker build -t fastapi-app .
 # Run
 docker run -p 8000:8000 fastapi-app
 
-# Docker Compose
+# Docker Compose (Desarrollo)
 docker-compose up -d
+```
+
+### Docker Compose (Producción)
+
+```bash
+# Usar configuración de producción
+docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up -d
+
+# Especificar archivo de entorno
+docker-compose --env-file .env.production up -d
+```
+
+### Dockerfile Multi-stage
+
+El proyecto incluye Dockerfile optimizado con múltiples etapas:
+- **builder**: Instala dependencias de Python
+- **production**: Imagen minimalista para producción
+- **development**: Con herramientas de desarrollo
+
+```bash
+# Build para producción
+docker build --target production -t fastapi-app:prod .
+
+# Build para desarrollo
+docker build --target development -t fastapi-app:dev .
 ```
 
 ## 🔐 Autenticación

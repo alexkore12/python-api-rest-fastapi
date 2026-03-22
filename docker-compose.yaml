@@ -1,42 +1,81 @@
-version: '3.8'
+# FastAPI Production Docker Compose
+# Optimized for production with security best practices (2026)
 
 services:
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastapi_prod
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
-      - DATABASE_URL=sqlite:///./app.db
+      - DATABASE_URL=${DATABASE_URL:-postgresql://fastapi:fastapi@postgres:5432/fastapi}
       - DEBUG=false
-    volumes:
-      - ./:/app
-      - app-data:/app
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 40s
+    networks:
+      - api-network
+    # Security: run as non-root user (configured in Dockerfile)
+    user: "1000:1000"
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: fastapi_postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-fastapi}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme}
+      - POSTGRES_DB=${POSTGRES_DB:-fastapi}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fastapi}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
       start_period: 10s
     networks:
       - api-network
-
-  # PostgreSQL option (use instead of SQLite for production)
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      - POSTGRES_USER=fastapi
-      - POSTGRES_PASSWORD=fastapi
-      - POSTGRES_DB=fastapi
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - api-network
+    # Resource limits for database
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
 
 networks:
   api-network:
     driver: bridge
 
 volumes:
-  app-data:
   postgres-data:
+    name: fastapi_postgres_data
+
+# Usage:
+# - Development: docker-compose up --build
+# - Production: docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up --build
+# - With custom env: docker-compose --env-file .env.production up
