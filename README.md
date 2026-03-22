@@ -1,209 +1,82 @@
-# 🚀 FastAPI REST API
+# FastAPI REST API
 
-API REST de alto rendimiento construida con FastAPI para gestión de items.
+REST API de alto rendimiento con Python FastAPI - **Versión 1.2.0 con Tests Completos**
 
-## 📋 Descripción
+## 🚀 Características
 
-API RESTful moderna con FastAPI que proporciona operaciones CRUD completas sobre items, con validación de datos, paginación, logging estructurado y documentación automática.
+- **FastAPI** - Framework moderno y rápido (async/await nativo)
+- **Pydantic** - Validación de datos automática con type hints
+- **CORS** - Configuración de CORS completa
+- **Type hints** - Código completamente tipado
+- **Async/Await** - Programación asíncrona de alto rendimiento
+- **Docker** -listo para producción
+- **OpenAPI** - Documentación automática (Swagger UI + ReDoc)
+- **Logging estructurado** - Logs de todas las requests
+- **Manejo de errores** - Errores controlados y bien documentados
+- **Tests completos** - pytest con coverage
 
-## 🛠️ Características
-
-- ⚡ **Alto Rendimiento** - Hasta 30k+ requests/seg
-- 🔒 **Seguridad** - Validación con Pydantic
-- 🌐 **CORS** - Configuración de Cross-Origin
-- 📊 **Rate Limiting** - Protección contra abusos
-- 📝 **Logging Estructurado** - Monitoreo detallado
-- ❤️ **Health Checks** - Endpoints de salud
-- 📚 **Documentación Auto** - OpenAPI/Swagger/ReDoc
-- 🧪 **Testing** - Endpoints de estadísticas
-
-## 🚀 Instalación
-
-### Prerrequisitos
-
-- Python 3.9+
-
-### Pasos
-
-```bash
-# 1. Clonar
-git clone https://github.com/alexkore12/python-api-rest-fastapi.git
-cd python-api-rest-fastapi
-
-# 2. Crear entorno virtual
-python3 -m venv venv
-source venv/bin/activate  # Linux/Mac
-# venv\Scripts\activate  # Windows
-
-# 3. Instalar dependencias
-pip install -r requirements.txt
-
-# 4. Ejecutar
-python main.py
-```
-
-La API estará disponible en:
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-- **OpenAPI**: http://localhost:8000/openapi.json
-
-## 🐳 Docker
-
-### Build
-
-```bash
-docker build -t fastapi-rest-api .
-```
-
-### Ejecutar
-
-```bash
-docker run -d -p 8000:8000 fastapi-rest-api
-```
-
-### Docker Compose
-
-```bash
-docker-compose up -d
-```
-
-## 📡 Endpoints
-
-### Health
+## 📋 Endpoints
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| GET | `/health` | Health check con uptime |
-
-### Items CRUD
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| GET | `/items` | Listar items (con paginación) |
+| GET | `/health` | Health check |
+| GET | `/items` | Listar items (paginado) |
 | GET | `/items/{id}` | Obtener item por ID |
 | POST | `/items` | Crear nuevo item |
 | PUT | `/items/{id}` | Actualizar item |
 | DELETE | `/items/{id}` | Eliminar item |
+| GET | `/stats` | Estadísticas |
 
-### Stats
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| GET | `/stats` | Estadísticas de la API |
-
-## 📝 Uso de Endpoints
-
-### Crear Item
+## 🛠️ Instalación
 
 ```bash
-curl -X POST "http://localhost:8000/items" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Mi Item",
-    "description": "Descripción del item",
-    "price": 99.99
-  }'
+# Clonar repositorio
+git clone https://github.com/alexkore12/python-api-rest-fastapi.git
+cd python-api-rest-fastapi
+
+# Crear entorno virtual
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# venv\Scripts\activate  # Windows
+
+# Instalar dependencias
+pip install -r requirements.txt
 ```
 
-### Listar Items (con paginación)
+## ▶️ Ejecución
+
+### Desarrollo
 
 ```bash
-# Obtener primeros 10 items
-curl "http://localhost:8000/items?skip=0&limit=10"
+# Con hot reload
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
-# Obtener siguientes 10
-curl "http://localhost:8000/items?skip=10&limit=10"
+# O directamente
+python main.py
 ```
 
-### Actualizar Item
+### Docker
 
 ```bash
-curl -X PUT "http://localhost:8000/items/{item_id}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Nombre actualizado",
-    "price": 149.99
-  }'
+# Build
+docker build -t fastapi-app .
+
+# Run
+docker run -p 8000:8000 fastapi-app
+
+# Docker Compose
+docker-compose up -d
 ```
 
-### Eliminar Item
+## 📖 Documentación
 
-```bash
-curl -X DELETE "http://localhost:8000/items/{item_id}"
-```
+Una vez ejecutando la API:
 
-## 📊 Respuestas
+- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+- **OpenAPI JSON**: [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json)
 
-### Health Check
-
-```json
-{
-  "status": "healthy",
-  "timestamp": "2026-03-21T12:00:00",
-  "uptime": "2h 30m 15s",
-  "version": "1.1.0"
-}
-```
-
-### List Items
-
-```json
-{
-  "success": true,
-  "count": 25,
-  "skip": 0,
-  "limit": 100,
-  "data": [...]
-}
-```
-
-### Stats
-
-```json
-{
-  "total_items": 42,
-  "uptime": "2h 30m 15s",
-  "timestamp": "2026-03-21T12:00:00"
-}
-```
-
-## 📁 Estructura
-
-```
-python-api-rest-fastapi/
-├── main.py              # Aplicación principal
-├── models.py            # Modelos Pydantic
-├── database.py          # Base de datos en memoria
-├── requirements.txt     # Dependencias
-├── Dockerfile          # Imagen Docker
-├── docker-compose.yaml  # Orquestación
-├── .dockerignore       # Ignorar archivos en Docker
-└── README.md           # Este archivo
-```
-
-## 🔧 Configuración
-
-### Parámetros de Paginación
-
-| Parámetro | Tipo | Default | Límites |
-|-----------|------|---------|---------|
-| `skip` | int | 0 | >= 0 |
-| `limit` | int | 100 | 1-100 |
-
-### Encabezados de Respuesta
-
-| Header | Descripción |
-|--------|-------------|
-| `X-Request-ID` | ID único de request |
-| `X-Process-Time` | Tiempo de procesamiento (segundos) |
-
-## 🔒 Seguridad
-
-- **Grype**: Escaneo de vulnerabilidades (alternativa a Trivy)
-- **Safety**: Verificación de dependencias Python
-- ⚠️ Trivy comprometido (supply chain attack, marzo 2026)
-
-## 🧪 Pruebas
+## 🔧 Uso de la API
 
 ### Health Check
 
@@ -211,103 +84,193 @@ python-api-rest-fastapi/
 curl http://localhost:8000/health
 ```
 
-### Crear varios items y ver estadísticas
+### Listar Items (con paginación)
 
 ```bash
-# Crear items
-curl -X POST http://localhost:8000/items -H "Content-Type: application/json" -d '{"name":"Item 1","price":10}'
-curl -X POST http://localhost:8000/items -H "Content-Type: application/json" -d '{"name":"Item 2","price":20}'
+curl "http://localhost:8000/items?skip=0&limit=10"
+```
 
-# Ver estadísticas
+### Crear Item
+
+```bash
+curl -X POST http://localhost:8000/items \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Nuevo producto",
+    "description": "Descripción del producto",
+    "price": 49.99,
+    "in_stock": true
+  }'
+```
+
+### Obtener Item
+
+```bash
+curl http://localhost:8000/items/{item_id}
+```
+
+### Actualizar Item
+
+```bash
+curl -X PUT http://localhost:8000/items/{item_id} \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Producto actualizado",
+    "price": 79.99
+  }'
+```
+
+### Eliminar Item
+
+```bash
+curl -X DELETE http://localhost:8000/items/{item_id}
+```
+
+### Estadísticas
+
+```bash
 curl http://localhost:8000/stats
 ```
 
-## ☁️ Deploy
+## 🧪 Testing
 
-### Railway/Render
-
-1. Conecta tu repositorio de GitHub
-2. Configura el puerto: `PORT=8000`
-3. Comando: `python main.py`
-
-### Heroku
+### Tests v1.2.0
 
 ```bash
-heroku create my-fastapi-app
-git push heroku main
+# Instalar dependencias de test
+pip install pytest pytest-asyncio httpx
+
+# Ejecutar tests
+pytest tests/ -v
+
+# Con coverage
+pytest tests/ --cov=. --cov-report=html
+
+# Coverage en terminal
+pytest tests/ --cov=. --cov-report=term-missing
 ```
 
-### VPS/Linux
+### Cobertura de Tests
 
-```bash
-# Instalar dependencias
-pip install -r requirements.txt
+| Categoría | Tests |
+|-----------|-------|
+| Health Check | ✅ Status, uptime |
+| CRUD Operations | ✅ Create, Read, Update, Delete |
+| Validation | ✅ Required fields, types, ranges |
+| Pagination | ✅ skip/limit parameters |
+| Statistics | ✅ Stats endpoint |
 
-# Ejecutar con systemd
-sudo cp fastapi.service /etc/systemd/system/
-sudo systemctl start fastapi
-sudo systemctl enable fastapi
+## 📁 Estructura del Proyecto
+
+```
+python-api-rest-fastapi/
+├── main.py                 # Aplicación principal (v1.2.0)
+├── models.py               # Modelos Pydantic
+├── database.py             # Configuración de BD
+├── requirements.txt        # Dependencias
+├── Dockerfile              # Imagen Docker
+├── docker-compose.yaml     # Orquestación
+├── .dockerignore           # Exclusiones Docker
+├── tests/
+│   └── test_api.py        # Suite de tests
+├── README.md               # Este archivo
+└── .env.example           # Ejemplo de configuración
 ```
 
-## 🔨 Desarrollo
+## ⚙️ Variables de Entorno
 
-### Hot Reload
+| Variable | Descripción | Default |
+|----------|-------------|---------|
+| `DATABASE_URL` | URL de base de datos | `sqlite:///./app.db` |
+| `HOST` | Host del servidor | `0.0.0.0` |
+| `PORT` | Puerto | `8000` |
+| `DEBUG` | Modo debug | `false` |
+| `LOG_LEVEL` | Nivel de logging | `INFO` |
 
-```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
+## 🔒 Seguridad
 
-### Con variables de entorno
+### Headers de Seguridad
 
-```bash
-export HOST=0.0.0.0
-export PORT=8000
-python main.py
-```
+La API incluye:
 
-## 📈 Mejoras Incluidas
+- **CORS** configurado (en producción, especificar orígenes permitidos)
+- **X-Request-ID** - ID único por request
+- **X-Process-Time** - Tiempo de procesamiento
 
-- ✅ Logging estructurado con request IDs
-- ✅ Middleware para tiempo de procesamiento
-- ✅ Validación de paginación
-- ✅ Endpoints de health y stats
-- ✅ Documentación en español
-- ✅ Manejo de errores mejorado
+### Validación con Pydantic
 
-## 🐛 Troubleshooting
+Pydantic valida automáticamente:
 
-### Puerto en uso
+- ✅ Tipos de datos
+- ✅ Longitud de strings
+- ✅ Rangos de números
+- ✅ Campos requeridos
+- ✅ Formatos (email, URL, etc.)
 
-```bash
-# Encontrar proceso
-lsof -i :8000
+### Recomendaciones para Producción
 
-# Matar proceso
-kill -9 <PID>
+1. **Usar HTTPS** - Configurar proxy reverso (nginx, traefik)
+2. **Limitar CORS** - Especificar dominios permitidos
+3. **Rate Limiting** - Implementar límites de requests
+4. **Autenticación** - Añadir OAuth2 o JWT
+5. **Logs** - Enviar logs a sistema centralizado
+6. **Métricas** - Integrar Prometheus/Grafana
 
-# O usar otro puerto
-python main.py --port 8001
-```
+## 🚀 Despliegue Recomendado
 
-### Dependencias
+### Docker Compose con Nginx
 
-```bash
-# Actualizar pip
-pip install --upgrade pip
+```yaml
+version: '3.8'
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=false
+      - LOG_LEVEL=info
 
-# Reinstalar dependencias
-pip install -r requirements.txt --force-reinstall
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
 ```
 
 ## 📝 Changelog
 
-- **v1.0.0** - API básica con CRUD
-- **v1.1.0** - Mejoras de seguridad y logging
+### v1.2.0 (2026-03-22)
+- ✅ Suite completa de tests (tests/test_api.py)
+- ✅ Tests de validación de entrada
+- ✅ Tests de paginación
+- ✅ Tests de estadísticas
+- ✅ Coverage configurado
 
-## 🤝 Contribución
+### v1.1.0 (2026-03-21)
+- ✅ Middleware de logging estructurado
+- ✅ Mejora en manejo de errores
+- ✅ Validación de parámetros de paginación
+- ✅ Headers de response (X-Request-ID, X-Process-Time)
+- ✅ Documentación OpenAPI mejorada
 
-¡Contribuciones bienvenidas! Abre un issue o PR.
+### v1.0.0 (2026-03-20)
+- ✅ Versión inicial
+- ✅ CRUD completo de items
+- ✅ Pydantic models
+- ✅ Docker support
+
+## 🤖 Generado por
+
+Este proyecto fue creado y actualizado por **OpenClaw AI Assistant**.
 
 ## 📄 Licencia
 
-MIT License - Uso libre.
+MIT License
+
+---
+
+**GitHub**: [alexkore12](https://github.com/alexkore12)
