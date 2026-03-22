@@ -1,6 +1,11 @@
 # FastAPI REST API
 
-REST API de alto rendimiento con Python FastAPI - **Versión 2.1 con Rate Limiting**
+[![CI/CD](https://github.com/alexkore12/python-api-rest-fastapi/actions/workflows/ci.yml/badge.svg)](https://github.com/alexkore12/python-api-rest-fastapi/actions)
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Docker](https://img.shields.io/badge/Docker-ready-blue)](https://www.docker.com/)
+
+REST API de alto rendimiento con Python FastAPI - **Versión 2.2 con Rate Limiting y CI/CD**
 
 ## 🚀 Características
 
@@ -271,6 +276,13 @@ python-api-rest-fastapi/
 ```
 
 ## 📝 Changelog
+
+### v2.2.0 (2026-03-22)
+- ✅ GitHub Actions CI/CD Pipeline añadido
+- ✅ Workflow de tests (multi-version Python), linting y seguridad
+- ✅ Badges de estado en README
+- ✅ Build Docker automático
+- ✅ Configuración de Dependabot
 
 ### v2.1.0 (2026-03-22)
 - ✅ Rate Limiting con slowapi (100 req/min público, 60 req/min autenticado)
