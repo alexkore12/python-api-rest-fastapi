@@ -121,6 +121,33 @@ Lee [CONTRIBUTING.md](CONTRIBUTING.md) antes de contribuir.
 
 MIT License - veja [LICENSE](LICENSE) para detalhes.
 
+## 🧪 Testing
+
+```bash
+# Ejecutar tests
+pytest
+
+# Con coverage
+pytest --cov=. --cov-report=html
+
+# Modo watch
+pytest --watch
+```
+
+## 📈 CI/CD
+
+Workflows de GitHub Actions incluidos:
+- ✅ Linting con ruff/black
+- ✅ Tests con pytest
+- ✅ Security scanning con Grype
+- ✅ Docker build multi-stage
+
+## 🌐 Referencias
+
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [Uvicorn](https://www.uvicorn.org/)
+- [Grype Vulnerability Scanner](https://github.com/anchore/grype)
+
 ## 👤 Autor
 
 - **Alex** - [@alexkore12](https://github.com/alexkore12)
