@@ -1,347 +1,126 @@
-# FastAPI REST API
+# 🚀 Python REST API (FastAPI)
 
-[![CI/CD](https://github.com/alexkore12/python-api-rest-fastapi/actions/workflows/ci.yml/badge.svg)](https://github.com/alexkore12/python-api-rest-fastapi/actions)
-[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![Docker](https://img.shields.io/badge/Docker-ready-blue)](https://www.docker.com/)
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-green.svg)](https://fastapi.tiangolo.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://docker.com)
+[![Security: Grype](https://img.shields.io/badge/Security-Grype-orange.svg)](.grype.yaml)
 
-REST API de alto rendimiento con Python FastAPI - **Versión 2.2 con Rate Limiting y CI/CD**
+## 📋 Descripción
 
-## 🚀 Características
+API REST moderna construida con FastAPI, diseñada para ser rápida, segura y fácil de mantener.
 
-- **FastAPI** - Framework moderno y rápido (async/await nativo)
-- **Pydantic** - Validación de datos automática con type hints
-- **JWT Authentication** - Seguridad con tokens JWT
-- **OAuth2** - Flujo de autenticación estándar
-- **Rate Limiting** - Límite de requests (100/min público, 60/min autenticado)
-- **CORS** - Configuración de CORS completa
-- **Type hints** - Código completamente tipado
-- **Async/Await** - Programación asíncrona de alto rendimiento
-- **Docker** -listo para producción
-- **OpenAPI** - Documentación automática (Swagger UI + ReDoc)
-- **Logging estructurado** - Logs de todas las requests
-- **Manejo de errores** - Errores controlados y bien documentados
-- **Tests completos** - pytest con coverage
+## ✨ Características
 
-## 📋 Endpoints
+- ⚡ **Alto Rendimiento**: Gracias a FastAPI y Uvicorn
+- 🔒 **Seguridad**: Autenticación JWT, CORS, rate limiting
+- 📝 **API Documentation**: Swagger UI automático
+- 🐳 **Docker Ready**: Despliegue fácil con Docker
+- 🔍 **Security Scanning**: Escaneo automático con Grype
+- ✅ **Pre-commit Hooks**: Code quality checks
+- 📊 **Logging Estructurado**: Con correlation IDs
 
-### Autenticación
+## 🚀 Instalación
 
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| POST | `/token` | Obtener token JWT |
-| GET | `/auth/me` | Usuario actual |
+### Prerequisites
+- Python 3.11+
+- Docker (opcional)
 
-### Items (Protegidos)
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| GET | `/health` | Health check |
-| GET | `/items` | Listar items (paginado) |
-| GET | `/items/{id}` | Obtener item por ID |
-| POST | `/items` | Crear nuevo item |
-| PUT | `/items/{id}` | Actualizar item |
-| DELETE | `/items/{id}` | Eliminar item |
-| GET | `/stats` | Estadísticas |
-
-## 🛠️ Instalación
+### Instalación Local
 
 ```bash
-# Clonar repositorio
+# Clonar el repositorio
 git clone https://github.com/alexkore12/python-api-rest-fastapi.git
 cd python-api-rest-fastapi
 
 # Crear entorno virtual
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# venv\Scripts\activate  # Windows
+source venv/bin/activate
 
 # Instalar dependencias
 pip install -r requirements.txt
+
+# Configurar variables de entorno
+cp .env.example .env
+
+# Ejecutar servidor de desarrollo
+uvicorn main:app --reload
 ```
 
-## ▶️ Ejecución
-
-### Desarrollo
+### Con Docker
 
 ```bash
-# Con hot reload
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+# Construir imagen
+docker build -t python-api-rest-fastapi .
 
-# O directamente
-python main.py
+# Ejecutar
+docker run -p 8000:8000 --env-file .env python-api-rest-fastapi
 ```
 
-### Docker
+### Con Docker Compose
 
 ```bash
-# Build
-docker build -t fastapi-app .
-
-# Run
-docker run -p 8000:8000 fastapi-app
-
-# Docker Compose (Desarrollo)
 docker-compose up -d
 ```
 
-### Docker Compose (Producción)
-
-```bash
-# Usar configuración de producción
-docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up -d
-
-# Especificar archivo de entorno
-docker-compose --env-file .env.production up -d
-```
-
-### Dockerfile Multi-stage
-
-El proyecto incluye Dockerfile optimizado con múltiples etapas:
-- **builder**: Instala dependencias de Python
-- **production**: Imagen minimalista para producción
-- **development**: Con herramientas de desarrollo
-
-```bash
-# Build para producción
-docker build --target production -t fastapi-app:prod .
-
-# Build para desarrollo
-docker build --target development -t fastapi-app:dev .
-```
-
-## 🔐 Autenticación
-
-### Obtener Token
-
-```bash
-curl -X POST http://localhost:8000/token \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "username=admin&password=admin123"
-```
-
-Respuesta:
-```json
-{
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "bearer",
-  "expires_in": 1800
-}
-```
-
-### Usar Token
-
-```bash
-curl http://localhost:8000/items \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
-```
-
-### Usuarios de Demo
-
-| Username | Password | Rol |
-|----------|----------|-----|
-| admin | admin123 | admin |
-| user | password | user |
-
-## 📖 Documentación
-
-Una vez ejecutando la API:
-
-- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
-- **OpenAPI JSON**: [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json)
-
-## 🔧 Uso de la API
-
-### Health Check
-
-```bash
-curl http://localhost:8000/health
-```
-
-### Autenticarse
-
-```bash
-curl -X POST http://localhost:8000/token \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "username=admin&password=admin123"
-```
-
-### Listar Items (protegido)
-
-```bash
-curl "http://localhost:8000/items?skip=0&limit=10" \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
-
-### Crear Item
-
-```bash
-curl -X POST http://localhost:8000/items \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Nuevo producto",
-    "description": "Descripción del producto",
-    "price": 49.99,
-    "in_stock": true
-  }'
-```
-
-### Obtener Item
-
-```bash
-curl http://localhost:8000/items/{item_id} \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
-
-### Actualizar Item
-
-```bash
-curl -X PUT http://localhost:8000/items/{item_id} \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Producto actualizado",
-    "price": 79.99
-  }'
-```
-
-### Eliminar Item
-
-```bash
-curl -X DELETE http://localhost:8000/items/{item_id} \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
-
-### Estadísticas
-
-```bash
-curl http://localhost:8000/stats \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
-
-## 🧪 Testing
-
-```bash
-# Instalar dependencias de test
-pip install pytest pytest-asyncio httpx python-jose
-
-# Ejecutar tests
-pytest tests/ -v
-
-# Con coverage
-pytest tests/ --cov=. --cov-report=html
-
-# Coverage en terminal
-pytest tests/ --cov=. --cov-report=term-missing
-```
-
-### Cobertura de Tests
-
-| Categoría | Tests |
-|-----------|-------|
-| Health Check | ✅ Status, uptime |
-| Autenticación | ✅ Login, token validation |
-| CRUD Operations | ✅ Create, Read, Update, Delete |
-| Validation | ✅ Required fields, types, ranges |
-| Pagination | ✅ skip/limit parameters |
-| Statistics | ✅ Stats endpoint |
-
 ## ⚙️ Configuración
-
-### Variables de Entorno
 
 | Variable | Descripción | Default |
 |----------|-------------|---------|
-| `DATABASE_URL` | URL de base de datos | sqlite:///./app.db |
-| `HOST` | Host del servidor | 0.0.0.0 |
-| `PORT` | Puerto | 8000 |
+| `APP_NAME` | Nombre de la aplicación | FastAPI |
+| `APP_VERSION` | Versión de la API | 1.0.0 |
 | `DEBUG` | Modo debug | false |
-| `LOG_LEVEL` | Nivel de logging | INFO |
-| `SECRET_KEY` | Clave JWT | (configurable) |
+| `DATABASE_URL` | URL de base de datos | sqlite:///./api.db |
+| `SECRET_KEY` | Clave secreta para JWT | - |
+| `ALGORITHM` | Algoritmo JWT | HS256 |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Expiración del token | 30 |
 
-## 🛡️ Seguridad
+## 📖 Documentación API
 
-La API incluye:
+Una vez ejecutando, visita:
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
 
-- **JWT Tokens** - Autenticación stateless
-- **OAuth2 Password Flow** - Flujo estándar de autenticación
-- **CORS configurado** - En producción, especificar orígenes permitidos
-- **Rate Limiting** - Límite de requests para prevenir abuse
-- **X-Request-ID** - ID único por request
-- **X-Process-Time** - Tiempo de procesamiento
-- **Pydantic Validation** - Validación automática de entrada
-
-### Recomendaciones de Producción
-
-- Usar HTTPS - Configurar proxy reverso (nginx, traefik)
-- Limitar CORS - Especificar dominios permitidos
-- Rate Limiting - Implementar límites de requests
-- Autenticación JWT ya incluida ✅
-- Logs - Enviar logs a sistema centralizado
-- Métricas - Integrar Prometheus/Grafana
-
-## 📁 Estructura del Proyecto
+## 🏗️ Estructura del Proyecto
 
 ```
 python-api-rest-fastapi/
-├── main.py              # Aplicación principal (v2.0)
-├── auth.py              # Módulo de autenticación JWT
-├── models.py            # Modelos Pydantic
-├── database.py          # Configuración de BD
-├── requirements.txt    # Dependencias
-├── Dockerfile           # Imagen Docker
-├── docker-compose.yaml  # Orquestación
-├── .dockerignore        # Exclusiones Docker
-├── tests/
-│   └── test_api.py     # Suite de tests
-├── README.md            # Este archivo
-└── .env.example        # Ejemplo de configuración
+├── .dockerignore
+├── .env.example
+├── .github/workflows/ci.yml
+├── .gitignore
+├── .grype.yaml
+├── .pre-commit-config.yaml
+├── CHANGELOG.md
+├── CODE_OF_CONDUCT.md
+├── CONTRIBUTING.md
+├── Dockerfile
+├── README.md
+├── SECURITY.md
+├── docker-compose.yaml
+├── logging_utils.py
+├── main.py
+└── requirements.txt
 ```
 
-## 📝 Changelog
+## 🔒 Seguridad
 
-### v2.2.0 (2026-03-22)
-- ✅ GitHub Actions CI/CD Pipeline añadido
-- ✅ Workflow de tests (multi-version Python), linting y seguridad
-- ✅ Badges de estado en README
-- ✅ Build Docker automático
-- ✅ Configuración de Dependabot
+- ✅ Escaneo con Grype en cada push
+- ✅ Pre-commit hooks para code quality
+- ✅ Autenticación JWT
+- ✅ CORS configurado
+- ✅ Rate limiting
 
-### v2.1.0 (2026-03-22)
-- ✅ Rate Limiting con slowapi (100 req/min público, 60 req/min autenticado)
-- ✅ Manejo de errores de rate limit (HTTP 429)
-- ✅ Documentación de rate limiting
+Consulta [SECURITY.md](SECURITY.md) para reporte de vulnerabilidades.
 
-### v2.0.0 (2026-03-22)
-- ✅ Autenticación JWT completa
-- ✅ OAuth2 Password Flow
-- ✅ Endpoints protegidos
-- ✅ Módulo auth.py separado
-- ✅ Tests de autenticación
+## 🤝 Contribuir
 
-### v1.2.0 (2026-03-21)
-- ✅ Tests completos
-- ✅ Logging estructurado
-- ✅ Validación mejorada
+Lee [CONTRIBUTING.md](CONTRIBUTING.md) antes de contribuir.
 
-### v1.1.0 (2026-03-20)
-- ✅ Middleware de logging
-- ✅ Mejora en manejo de errores
+## 📝 Licencia
 
-### v1.0.0 (2026-03-19)
-- ✅ CRUD completo de items
-- ✅ Pydantic models
-- ✅ Docker support
+MIT License - veja [LICENSE](LICENSE) para detalhes.
 
-## 📄 Licencia
+## 👤 Autor
 
-MIT License
-
-GitHub: [alexkore12](https://github.com/alexkore12)
-
-## 🤖 Actualizado por
-
-OpenClaw AI Assistant - 2026-03-22
-*Mejoras v2.0: Autenticación JWT, OAuth2, seguridad mejorada*
+- **Alex** - [@alexkore12](https://github.com/alexkore12)
