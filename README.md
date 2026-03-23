@@ -1,33 +1,22 @@
 # FastAPI REST API
 
-REST API de alto rendimiento con Python FastAPI - **Versión 1.2.0 con Tests Completos**
+REST API de alto rendimiento con Python FastAPI - Versión 1.3.0 con Tests Completos y CI/CD
 
-## 🚀 Características
+## Características
 
 - **FastAPI** - Framework moderno y rápido (async/await nativo)
 - **Pydantic** - Validación de datos automática con type hints
 - **CORS** - Configuración de CORS completa
 - **Type hints** - Código completamente tipado
 - **Async/Await** - Programación asíncrona de alto rendimiento
-- **Docker** -listo para producción
+- **Docker** - Listo para producción
 - **OpenAPI** - Documentación automática (Swagger UI + ReDoc)
 - **Logging estructurado** - Logs de todas las requests
 - **Manejo de errores** - Errores controlados y bien documentados
 - **Tests completos** - pytest con coverage
+- **CI/CD** - GitHub Actions integrado
 
-## 📋 Endpoints
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| GET | `/health` | Health check |
-| GET | `/items` | Listar items (paginado) |
-| GET | `/items/{id}` | Obtener item por ID |
-| POST | `/items` | Crear nuevo item |
-| PUT | `/items/{id}` | Actualizar item |
-| DELETE | `/items/{id}` | Eliminar item |
-| GET | `/stats` | Estadísticas |
-
-## 🛠️ Instalación
+## Instalación
 
 ```bash
 # Clonar repositorio
@@ -37,13 +26,13 @@ cd python-api-rest-fastapi
 # Crear entorno virtual
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
-# venv\Scripts\activate  # Windows
+# venv\Scripts\activate    # Windows
 
 # Instalar dependencias
 pip install -r requirements.txt
 ```
 
-## ▶️ Ejecución
+## Uso
 
 ### Desarrollo
 
@@ -55,7 +44,13 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 python main.py
 ```
 
-### Docker
+### Producción
+
+```bash
+uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
+```
+
+## Docker
 
 ```bash
 # Build
@@ -68,7 +63,7 @@ docker run -p 8000:8000 fastapi-app
 docker-compose up -d
 ```
 
-## 📖 Documentación
+## Documentación Automática
 
 Una vez ejecutando la API:
 
@@ -76,7 +71,19 @@ Una vez ejecutando la API:
 - **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 - **OpenAPI JSON**: [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json)
 
-## 🔧 Uso de la API
+## Endpoints
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/health` | Health check |
+| GET | `/items` | Listar items (paginado) |
+| GET | `/items/{id}` | Obtener item por ID |
+| POST | `/items` | Crear nuevo item |
+| PUT | `/items/{id}` | Actualizar item |
+| DELETE | `/items/{id}` | Eliminar item |
+| GET | `/stats` | Estadísticas |
+
+## Ejemplos de Uso
 
 ### Health Check
 
@@ -84,7 +91,7 @@ Una vez ejecutando la API:
 curl http://localhost:8000/health
 ```
 
-### Listar Items (con paginación)
+### Listar Items (Paginado)
 
 ```bash
 curl "http://localhost:8000/items?skip=0&limit=10"
@@ -132,52 +139,9 @@ curl -X DELETE http://localhost:8000/items/{item_id}
 curl http://localhost:8000/stats
 ```
 
-## 🧪 Testing
+## Configuración
 
-### Tests v1.2.0
-
-```bash
-# Instalar dependencias de test
-pip install pytest pytest-asyncio httpx
-
-# Ejecutar tests
-pytest tests/ -v
-
-# Con coverage
-pytest tests/ --cov=. --cov-report=html
-
-# Coverage en terminal
-pytest tests/ --cov=. --cov-report=term-missing
-```
-
-### Cobertura de Tests
-
-| Categoría | Tests |
-|-----------|-------|
-| Health Check | ✅ Status, uptime |
-| CRUD Operations | ✅ Create, Read, Update, Delete |
-| Validation | ✅ Required fields, types, ranges |
-| Pagination | ✅ skip/limit parameters |
-| Statistics | ✅ Stats endpoint |
-
-## 📁 Estructura del Proyecto
-
-```
-python-api-rest-fastapi/
-├── main.py                 # Aplicación principal (v1.2.0)
-├── models.py               # Modelos Pydantic
-├── database.py             # Configuración de BD
-├── requirements.txt        # Dependencias
-├── Dockerfile              # Imagen Docker
-├── docker-compose.yaml     # Orquestación
-├── .dockerignore           # Exclusiones Docker
-├── tests/
-│   └── test_api.py        # Suite de tests
-├── README.md               # Este archivo
-└── .env.example           # Ejemplo de configuración
-```
-
-## ⚙️ Variables de Entorno
+### Variables de Entorno
 
 | Variable | Descripción | Default |
 |----------|-------------|---------|
@@ -187,17 +151,63 @@ python-api-rest-fastapi/
 | `DEBUG` | Modo debug | `false` |
 | `LOG_LEVEL` | Nivel de logging | `INFO` |
 
-## 🔒 Seguridad
+## Estructura del Proyecto
 
-### Headers de Seguridad
+```
+python-api-rest-fastapi/
+├── main.py                  # Aplicación principal (v1.3.0)
+├── models.py                # Modelos Pydantic
+├── database.py              # Configuración de BD
+├── requirements.txt        # Dependencias
+├── Dockerfile               # Imagen Docker
+├── docker-compose.yaml      # Orquestación
+├── .dockerignore            # Exclusiones Docker
+├── .github/
+│   └── workflows/
+│       └── ci.yml           # GitHub Actions CI/CD
+├── tests/
+│   └── test_api.py          # Suite de tests
+├── README.md                # Este archivo
+└── .env.example             # Ejemplo de configuración
+```
 
-La API incluye:
+## Tests
 
-- **CORS** configurado (en producción, especificar orígenes permitidos)
-- **X-Request-ID** - ID único por request
-- **X-Process-Time** - Tiempo de procesamiento
+###安装依赖
 
-### Validación con Pydantic
+```bash
+pip install pytest pytest-asyncio httpx
+```
+
+###Ejecutar tests
+
+```bash
+pytest tests/ -v
+```
+
+###Con coverage
+
+```bash
+pytest tests/ --cov=. --cov-report=html
+```
+
+###Coverage en terminal
+
+```bash
+pytest tests/ --cov=. --cov-report=term-missing
+```
+
+###Cobertura de Tests
+
+| Categoría | Tests |
+|-----------|-------|
+| Health Check | ✅ Status, uptime |
+| CRUD Operations | ✅ Create, Read, Update, Delete |
+| Validation | ✅ Required fields, types, ranges |
+| Pagination | ✅ skip/limit parameters |
+| Statistics | ✅ Stats endpoint |
+
+## Validación con Pydantic
 
 Pydantic valida automáticamente:
 
@@ -207,18 +217,24 @@ Pydantic valida automáticamente:
 - ✅ Campos requeridos
 - ✅ Formatos (email, URL, etc.)
 
-### Recomendaciones para Producción
+## Headers de Respuesta
 
-1. **Usar HTTPS** - Configurar proxy reverso (nginx, traefik)
-2. **Limitar CORS** - Especificar dominios permitidos
-3. **Rate Limiting** - Implementar límites de requests
-4. **Autenticación** - Añadir OAuth2 o JWT
-5. **Logs** - Enviar logs a sistema centralizado
-6. **Métricas** - Integrar Prometheus/Grafana
+La API incluye:
 
-## 🚀 Despliegue Recomendado
+- CORS configurado (en producción, especificar orígenes permitidos)
+- X-Request-ID - ID único por request
+- X-Process-Time - Tiempo de procesamiento
 
-### Docker Compose con Nginx
+## Seguridad en Producción
+
+- Usar HTTPS - Configurar proxy reverso (nginx, traefik)
+- Limitar CORS - Especificar dominios permitidos
+- Rate Limiting - Implementar límites de requests
+- Autenticación - Añadir OAuth2 o JWT
+- Logs - Enviar logs a sistema centralizado
+- Métricas - Integrar Prometheus/Grafana
+
+## Docker Compose con Nginx
 
 ```yaml
 version: '3.8'
@@ -241,36 +257,54 @@ services:
       - api
 ```
 
-## 📝 Changelog
+## GitHub Actions CI/CD
 
-### v1.2.0 (2026-03-22)
-- ✅ Suite completa de tests (tests/test_api.py)
-- ✅ Tests de validación de entrada
-- ✅ Tests de paginación
-- ✅ Tests de estadísticas
-- ✅ Coverage configurado
+El proyecto incluye workflow automático:
 
-### v1.1.0 (2026-03-21)
-- ✅ Middleware de logging estructurado
-- ✅ Mejora en manejo de errores
-- ✅ Validación de parámetros de paginación
-- ✅ Headers de response (X-Request-ID, X-Process-Time)
-- ✅ Documentación OpenAPI mejorada
+```yaml
+name: CI/CD
 
-### v1.0.0 (2026-03-20)
-- ✅ Versión inicial
-- ✅ CRUD completo de items
-- ✅ Pydantic models
-- ✅ Docker support
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
-## 🤖 Generado por
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run tests
+        run: pytest tests/ -v
+```
 
-Este proyecto fue creado y actualizado por **OpenClaw AI Assistant**.
+## Changelog
 
-## 📄 Licencia
+- ✅ v1.3.0 - GitHub Actions CI/CD añadido
+- ✅ v1.2.0 - Suite completa de tests
+- ✅ v1.1.0 - Middleware de logging estructurado
+- ✅ v1.0.0 - Versión inicial
 
-MIT License
+## Dependencias
 
----
+- FastAPI
+- Pydantic
+- Uvicorn
+- SQLAlchemy (optional)
+- pytest
 
-**GitHub**: [alexkore12](https://github.com/alexkore12)
+## Licencia
+
+MIT
+
+## Autor
+
+GitHub: [alexkore12](https://github.com/alexkore12)
+
+Este proyecto fue creado y actualizado por OpenClaw AI Assistant.
