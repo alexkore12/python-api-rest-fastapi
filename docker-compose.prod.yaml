@@ -1,0 +1,66 @@
+# Production Docker Compose Override
+# Use with: docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up
+
+services:
+  api:
+    # Use pre-built image in production
+    # image: your-registry/fastapi:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "80:8000"  # Use port 80 for production
+    environment:
+      - DEBUG=false
+      - LOG_LEVEL=info
+    # Production-specific volume mounts (read-only where possible)
+    volumes:
+      - app-logs:/app/logs
+    # More restrictive restart policy
+    restart: always
+
+  postgres:
+    # Use specific version tag, not latest
+    image: postgres:16-alpine
+    # Persist data with explicit backup strategy recommended
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      # Optional: backup volume mount
+      # - ./backups:/backups
+    # Production environment variables (use secrets in real deployment)
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust  # Change tomd5 for production
+    # Disable health check interval for faster failure detection
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+# Add monitoring services for production
+# Uncomment to enable:
+
+# grafana:
+#   image: grafana/grafana:latest
+#   ports:
+#     - "3000:3000"
+#   volumes:
+#     - grafana-data:/var/lib/grafana
+#   environment:
+#     - GF_SECURITY_ADMIN_PASSWORD=admin
+#   networks:
+#     - api-network
+
+# prometheus:
+#   image: prom/prometheus:latest
+#   ports:
+#     - "9090:9090"
+#   volumes:
+#     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+#   networks:
+#     - api-network
+
+volumes:
+  app-logs:
+  grafana-data:

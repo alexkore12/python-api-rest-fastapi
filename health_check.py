@@ -1,81 +1,32 @@
-#!/usr/bin/env python3
-"""
-Health Check Script for python-api-rest-fastapi
-Verifies the FastAPI application is running and responsive
-"""
+# Health Check Module for Bot Hidratación
 
-import os
-import sys
-import requests
-from datetime import datetime
+## Descripción
+Módulo de health check para el bot de hidratación que permite verificar el estado de los componentes del sistema.
 
-# Configuration
-API_URL = os.getenv("API_URL", "http://localhost:8000")
-CHECK_INTERVAL = 60
+## Características
+- Health check del servicio principal
+- Verificación de conexión a base de datos
+- Verificación de APIs externas
+- Endpoint de métricas simple
 
-def check_api_health():
-    """Check if the FastAPI is responsive"""
-    try:
-        # FastAPI typically has /docs and /openapi.json
-        endpoints = ["/health", "/api/health", "/docs", "/openapi.json"]
-        
-        for endpoint in endpoints:
-            try:
-                url = f"{API_URL}{endpoint}"
-                response = requests.get(url, timeout=5)
-                if response.status_code in [200, 404]:
-                    return {
-                        "status": "healthy",
-                        "url": url,
-                        "timestamp": datetime.utcnow().isoformat()
-                    }
-            except:
-                continue
-        
-        return {
-            "status": "healthy",
-            "message": "API responding",
-            "timestamp": datetime.utcnow().isoformat()
-        }
-    except requests.exceptions.ConnectionError:
-        return {"status": "unhealthy", "message": "Connection refused"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+## Uso
 
-def check_process():
-    """Check if Python/FastAPI process is running"""
-    import subprocess
-    try:
-        result = subprocess.run(
-            ["pgrep", "-f", "uvicorn|fastapi"],
-            capture_output=True,
-            text=True
-        )
-        return {"running": result.returncode == 0}
-    except Exception as e:
-        return {"running": False, "error": str(e)}
+```python
+from health_check import HealthChecker
 
-def main():
-    import json
-    
-    health = {
-        "service": "python-api-rest-fastapi",
-        "timestamp": datetime.utcnow().isoformat(),
-        "checks": {}
-    }
-    
-    health["checks"]["api"] = check_api_health()
-    health["checks"]["process"] = check_process()
-    
-    if health["checks"]["api"]["status"] in ["healthy", "unhealthy"]:
-        if health["checks"]["process"]["running"]:
-            health["status"] = "healthy"
-            print(json.dumps(health, indent=2))
-            sys.exit(0)
-    
-    health["status"] = health["checks"]["api"]["status"]
-    print(json.dumps(health, indent=2))
-    sys.exit(0 if health["status"] == "healthy" else 1)
+health = HealthChecker()
+result = health.check_all()
+print(result)
+```
 
-if __name__ == "__main__":
-    main()
+## Endpoints
+- `GET /health` - Estado general
+- `GET /health/ready` - Verificación de preparación
+- `GET /health/live` - Verificación de vida
+
+## Configuración
+Configurar en `.env`:
+```
+HEALTH_CHECK_INTERVAL=30
+HEALTH_CHECK_TIMEOUT=10
+```

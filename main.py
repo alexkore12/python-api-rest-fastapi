@@ -1,20 +1,36 @@
 """
 FastAPI REST API - Aplicación principal
-Versión mejorada con seguridad, logging y mejor manejo de errores
+Versión 2.1 con Rate Limiting, Autenticación JWT y seguridad mejorada
 """
 from fastapi import FastAPI, HTTPException, status, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
-from datetime import datetime
-from typing import Optional, Dict, Any
+from datetime import datetime, timedelta
+from typing import Optional, Dict, Any, List
 import uuid
 import logging
 import time
 import sys
+import os
 
 from models import Item, ItemCreate, ItemUpdate
 from database import items_db
+from security_headers import SecurityHeadersMiddleware
+from auth import (
+    create_access_token, 
+    authenticate_user, 
+    get_current_active_user,
+    User,
+    ACCESS_TOKEN_EXPIRE_MINUTES
+)
+
+# Rate Limiter setup
+limiter = Limiter(key_func=get_remote_address)
 
 # Configurar logging
 logging.basicConfig(
@@ -32,8 +48,9 @@ start_time = datetime.utcnow()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifecycle manager"""
-    logger.info("🚀 Starting FastAPI REST API...")
+    logger.info("🚀 Starting FastAPI REST API v2.1...")
     logger.info(f"📚 API Documentation: /docs")
+    logger.info(f"🔐 Authentication: JWT enabled")
     yield
     logger.info("🛑 Shutting down API...")
 
@@ -43,17 +60,36 @@ app = FastAPI(
     
 ## Características
 - ✅ Validación con Pydantic
+- ✅ Autenticación JWT
 - ✅ CORS configurado
-- ✅ Rate Limiting
+- ✅ Rate Limiting (100 req/min)
 - ✅ Logging estructurado
 - ✅ Health checks
 - ✅ Documentación OpenAPI""",
-    version="1.1.0",
+    version="2.1.0",
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json"
 )
+
+# Add rate limiter to app state
+app.state.limiter = limiter
+
+# Rate limit handler
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={
+            "error": "Too Many Requests",
+            "detail": "Rate limit exceeded. Please try again later.",
+            "retry_after": exc.detail
+        }
+    )
+
+# OAuth2 scheme
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # CORS configurado
 app.add_middleware(
@@ -63,6 +99,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Security headers middleware
+app.add_middleware(SecurityHeadersMiddleware)
 
 # Middleware para logging de requests
 @app.middleware("http")
@@ -107,24 +146,75 @@ def calculate_uptime() -> str:
     return f"{hours}h {minutes}m {seconds}s"
 
 
-# Health check
+# ============================================
+# ENDPOINTS DE AUTENTICACIÓN
+# ============================================
+
+@app.post(
+    "/token",
+    summary="Obtener Token",
+    description="Autenticarse y obtener token JWT",
+    tags=["Auth"]
+)
+@limiter.limit("10/minute")
+async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
+    """Login para obtener token JWT"""
+    user = authenticate_user(form_data.username, form_data.password)
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username},
+        expires_delta=access_token_expires
+    )
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    }
+
+
+@app.get(
+    "/auth/me",
+    summary="Usuario Actual",
+    description="Obtener información del usuario autenticado",
+    tags=["Auth"],
+    response_model=Dict[str, Any]
+)
+async def read_users_me(current_user: User = Depends(get_current_active_user)):
+    """Obtener usuario actual"""
+    return {
+        "username": current_user.username,
+        "disabled": current_user.disabled
+    }
+
+
+# Health check (público) - 30 requests per minute
 @app.get(
     "/health",
     summary="Health Check",
     description="Verificar estado de la API",
     tags=["Health"]
 )
-async def health_check():
+@limiter.limit("30/minute")
+async def health_check(request: Request):
     """Endpoint de health check"""
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
         "uptime": calculate_uptime(),
-        "version": "1.1.0"
+        "version": "2.0.0"
     }
 
 
-# GET all items
+# GET all items (protegido) - 60 requests per minute
 @app.get(
     "/items",
     status_code=status.HTTP_200_OK,
@@ -133,8 +223,14 @@ async def health_check():
     tags=["Items"],
     response_model=Dict[str, Any]
 )
-async def get_items(skip: int = 0, limit: int = 100):
-    """Obtener lista de items"""
+@limiter.limit("60/minute")
+async def get_items(
+    request: Request,
+    skip: int = 0, 
+    limit: int = 100,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Obtener lista de items (requiere autenticación)"""
     # Validar parámetros de paginación
     if skip < 0:
         raise HTTPException(
@@ -150,7 +246,7 @@ async def get_items(skip: int = 0, limit: int = 100):
     items = list(db.values())
     total = len(items)
     
-    logger.info(f"Fetching items: skip={skip}, limit={limit}, total={total}")
+    logger.info(f"User {current_user.username} fetching items: skip={skip}, limit={limit}, total={total}")
     
     return {
         "success": True,
@@ -161,7 +257,7 @@ async def get_items(skip: int = 0, limit: int = 100):
     }
 
 
-# GET single item
+# GET single item (protegido)
 @app.get(
     "/items/{item_id}",
     summary="Obtener Item",
@@ -169,7 +265,10 @@ async def get_items(skip: int = 0, limit: int = 100):
     tags=["Items"],
     response_model=Dict[str, Any]
 )
-async def get_item(item_id: str):
+async def get_item(
+    item_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
     """Obtener item por ID"""
     if item_id not in db:
         logger.warning(f"Item not found: {item_id}")
@@ -180,7 +279,7 @@ async def get_item(item_id: str):
     return {"success": True, "data": db[item_id]}
 
 
-# POST create item
+# POST create item (protegido)
 @app.post(
     "/items",
     status_code=status.HTTP_201_CREATED,
@@ -189,7 +288,10 @@ async def get_item(item_id: str):
     tags=["Items"],
     response_model=Dict[str, Any]
 )
-async def create_item(item: ItemCreate):
+async def create_item(
+    item: ItemCreate,
+    current_user: User = Depends(get_current_active_user)
+):
     """Crear nuevo item"""
     item_id = str(uuid.uuid4())
     new_item = Item(
@@ -199,12 +301,12 @@ async def create_item(item: ItemCreate):
     )
     db[item_id] = new_item
     
-    logger.info(f"Created item: {item_id}")
+    logger.info(f"User {current_user.username} created item: {item_id}")
     
     return {"success": True, "data": new_item}
 
 
-# PUT update item
+# PUT update item (protegido)
 @app.put(
     "/items/{item_id}",
     summary="Actualizar Item",
@@ -212,7 +314,11 @@ async def create_item(item: ItemCreate):
     tags=["Items"],
     response_model=Dict[str, Any]
 )
-async def update_item(item_id: str, item_update: ItemUpdate):
+async def update_item(
+    item_id: str, 
+    item_update: ItemUpdate,
+    current_user: User = Depends(get_current_active_user)
+):
     """Actualizar item existente"""
     if item_id not in db:
         logger.warning(f"Item not found for update: {item_id}")
@@ -230,12 +336,12 @@ async def update_item(item_id: str, item_update: ItemUpdate):
     existing.updated_at = datetime.utcnow().isoformat()
     db[item_id] = existing
     
-    logger.info(f"Updated item: {item_id}")
+    logger.info(f"User {current_user.username} updated item: {item_id}")
     
     return {"success": True, "data": existing}
 
 
-# DELETE item
+# DELETE item (protegido)
 @app.delete(
     "/items/{item_id}",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -243,7 +349,10 @@ async def update_item(item_id: str, item_update: ItemUpdate):
     description="Eliminar un item por su ID",
     tags=["Items"]
 )
-async def delete_item(item_id: str):
+async def delete_item(
+    item_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
     """Eliminar item"""
     if item_id not in db:
         logger.warning(f"Item not found for delete: {item_id}")
@@ -254,12 +363,12 @@ async def delete_item(item_id: str):
     
     del db[item_id]
     
-    logger.info(f"Deleted item: {item_id}")
+    logger.info(f"User {current_user.username} deleted item: {item_id}")
     
     return None
 
 
-# Stats endpoint
+# Stats endpoint (protegido)
 @app.get(
     "/stats",
     summary="Estadísticas",
@@ -267,7 +376,7 @@ async def delete_item(item_id: str):
     tags=["Stats"],
     response_model=Dict[str, Any]
 )
-async def get_stats():
+async def get_stats(current_user: User = Depends(get_current_active_user)):
     """Estadísticas de la API"""
     return {
         "total_items": len(db),
